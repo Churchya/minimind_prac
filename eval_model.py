@@ -17,15 +17,18 @@ def init_model(args):
     if args.load == 0:
         moe_path = '_moe' if args.use_moe else ''
         modes = {0: 'pretrain', 1: 'full_sft', 2: 'rlhf', 3: 'reason'}
-        ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}.pth'
-
+        #ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}_{args.extra}.pth'
+        ckp = f'./{args.out_dir}/{modes[args.model_mode]}_{args.dim}{moe_path}_{args.extra}.pth'
         model = MiniMindLM(LMConfig(
             dim=args.dim,
             n_layers=args.n_layers,
             max_seq_len=args.max_seq_len,
             use_moe=args.use_moe
         ))
-
+        # 两种不同的加载方式，取决于使用了checkpoint还是只保留模型权重
+        # checkpoint = torch.load(ckp, map_location=args.device)
+        # state_dict = checkpoint['model']
+        # model.load_state_dict({k: v for k, v in state_dict.items() if 'mask' not in k}, strict=True)
         state_dict = torch.load(ckp, map_location=args.device)
         model.load_state_dict({k: v for k, v in state_dict.items() if 'mask' not in k}, strict=True)
 
@@ -84,6 +87,12 @@ def get_prompt_datas(args):
                     '我最近总是感到焦虑，应该怎么缓解？',
                     '如果有人突然晕倒，应该如何急救？'
                 ],
+                'translator':[
+                    '帮我翻译这段英文: hello world',
+                    '帮我翻译这段英文: A Balanced Look at Sino-American Imbalances',
+                    '帮我翻译这段英文: my name is church',
+                    '帮我翻译这段英文: how old are you',
+                ]
             }
             prompt_datas = lora_prompt_datas[args.lora_name]
 
@@ -124,6 +133,7 @@ def main():
     parser.add_argument('--load', default=0, type=int, help="0: 原生torch权重，1: transformers加载")
     parser.add_argument('--model_mode', default=1, type=int,
                         help="0: 预训练模型，1: SFT-Chat模型，2: RLHF-Chat模型，3: Reason模型")
+    parser.add_argument('--extra', default='', type=str)
     args = parser.parse_args()
 
     model, tokenizer = init_model(args)

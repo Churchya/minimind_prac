@@ -1,0 +1,15 @@
+modelscope download --model gongjy/MiniMind2-PyTorch pretrain_768.pth --local_dir ./out
+modelscope download --dataset gongjy/minimind_dataset sft_512.jsonl --local_dir ./dataset
+python eval_model.py --mode 0 --dim 768 --n_layers 16
+python eval_model.py --mode 1 --dim 768 --extra 'mixed' --n_layers 16
+torchrun --nproc_per_node 4 train_full_sft_self.py --dim 768 --extra 'translator' --n_layers 16 --epoch 4 --data_path "dataset/sft_512_trans.jsonl"
+python eval_model_self.py --mode 1 --dim 768 --n_layers 16 --extra 'translator'
+python eval_model.py --mode 1 --dim 768 --n_layers 16 --extra 'translator'
+torchrun --nproc_per_node 4 train_full_sft.py --dim 768 --extra 'translator' --n_layers 16 --epoch 4 --data_path "dataset/sft_512_trans2.jsonl"
+git clone https://hf-mirror.com/datasets/jiarui1/Minimind_train_dataset/sft_512_mixed_shuffled.jsonl
+git clone https://huggingface.co/datasets/jiarui1/Minimind_train_dataset/sft_512_mixed_shuffled.jsonl
+huggingface-cli download --repo-type dataset --resume-download datasets/jiarui1/Minimind_train_dataset/sft_512_mixed_shuffled.jsonl --local-dir dataset
+torchrun --nproc_per_node 4 train_full_sft.py --dim 768 --n_layers 16 --epoch 2 --data_path "dataset/sft_512_trans2.jsonl" --learning_rate 1e-5
+torchrun --nproc_per_node 4 train_full_sft_self.py --dim 768 --n_layers 16 --epoch 2 --data_path "dataset/sft_512_trans2.jsonl" --learning_rate 1e-5
+torchrun --nproc_per_node 4 train_lora.py --dim 768 --n_layers 16 --data_path "dataset/sft_512_trans_mixed_lora.jsonl" --lora_name "translator" --accumulation_steps 2 --learning_rate 3e-4 --epoch 4
+python eval_model.py --mode 1 --dim 768 --n_layers 16 --lora_name "translator" --extra "mixed"
