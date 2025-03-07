@@ -8,7 +8,7 @@
 - [转化为sft所需格式](https://github.com/Churchya/minimind_prac/blob/master/sft_trans.py)
 - [将两个数据集按比例混合](https://github.com/Churchya/minimind_prac/blob/master/shuffle_data.py)
 ## 3.中英pretrain&sft数据集来源
-- [](https://huggingface.co/datasets/jiarui1/Minimind_train_dataset)
+- [jiarui1](https://huggingface.co/datasets/jiarui1/Minimind_train_dataset)
 ## 4.翻译数据集来源
 - [数据集1](https://aistudio.baidu.com/datasetdetail/209041)格式如下：
   ```
